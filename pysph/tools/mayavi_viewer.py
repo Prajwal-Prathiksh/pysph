@@ -409,6 +409,58 @@ class ParticleArrayHelper(HasTraits):
                 # output_property_arrays is non-zero length.
                 pa.add_output_arrays(['vmag'])
             self.updated = True
+    
+    def _add_omega_mag(self, pa):
+        if 'gradv' in pa.properties:
+            if 'omega_mag' not in pa.properties:
+                gradv = pa.get('gradv', only_real_particles=False)
+                omegax = gradv[5::9] - gradv[7::9]
+                omegay = gradv[6::9] - gradv[2::9]
+                omegaz = gradv[3::9] - gradv[1::9]
+                omega_mag = numpy.sqrt(omegax**2 + omegay**2 + omegaz**2)
+
+                pa.add_property(name='omega_mag', data=omega_mag)
+                if len(pa.output_property_arrays) > 0:
+                    pa.add_output_arrays(
+                        ['omega_mag']
+                    )
+                self.updated = True
+
+    def _add_omegax(self, pa):
+        if 'gradv' in pa.properties:
+            if 'omegax' not in pa.properties:
+                gradv = pa.get('gradv', only_real_particles=False)
+                omegax = gradv[5::9] - gradv[7::9]
+                pa.add_property(name='omegax', data=omegax)
+                if len(pa.output_property_arrays) > 0:
+                    pa.add_output_arrays(
+                        ['omegax']
+                    )
+                self.updated = True
+    
+    def _add_omegay(self, pa):
+        if 'gradv' in pa.properties:
+            if 'omegay' not in pa.properties:
+                gradv = pa.get('gradv', only_real_particles=False)
+                omegay = gradv[6::9] - gradv[2::9]
+                pa.add_property(name='omegay', data=omegay)
+                if len(pa.output_property_arrays) > 0:
+                    pa.add_output_arrays(
+                        ['omegay']
+                    )
+                self.updated = True
+        
+    def _add_omegaz(self, pa):
+        if 'gradv' in pa.properties:
+            if 'omegaz' not in pa.properties:
+                gradv = pa.get('gradv', only_real_particles=False)
+                omegaz = gradv[3::9] - gradv[1::9]
+                pa.add_property(name='omegaz', data=omegaz)
+                if len(pa.output_property_arrays) > 0:
+                    pa.add_output_arrays(
+                        ['omegaz']
+                    )
+                self.updated = True
 
     def _eval_formula(self):
         if len(self.formula) > 0:
@@ -629,8 +681,7 @@ class ParticleArrayHelper(HasTraits):
             txt.text = 'Time = %.3e' % (value)
 
     def _extra_scalars_default(self):
-        return ['vmag']
-
+        return ['vmag', 'omega_mag', 'omegax', 'omegay', 'omegaz']
 
 class PythonShellView(HasTraits):
     ns = Dict()
