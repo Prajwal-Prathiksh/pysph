@@ -420,7 +420,9 @@ class Interpolator(object):
             pa.add_property('moment', stride=16)
             pa.add_property('p_sph', stride=4)
             pa.add_property('prop', stride=4)
-
+            pa.add_property('m_mat', stride=9)
+            pa.add_property('cwij')
+            pa.add_property('dw_gamma', stride=3)
         return pa
 
     def _compile_acceleration_eval(self, arrays):
@@ -455,7 +457,7 @@ class Interpolator(object):
                 ]
         else:
             equations = self.equations
-        self.func_eval = AccelerationEval(arrays, equations, self.kernel)
+        self.func_eval = AccelerationEval(arrays, equations, self.kernel, mode='mpi')
         compiler = SPHCompiler(self.func_eval, None)
         compiler.compile()
 
