@@ -337,6 +337,8 @@ class Interpolator(object):
             if prop not in array.properties:
                 data = 0.0
             else:
+                if prop in array.stride:
+                    raise RuntimeError(f"Error: {prop} has stride. Use `interpolate_prop_with_stride`")
                 data = array.get(prop, only_real_particles=False)
 
             array.get('temp_prop', only_real_particles=False)[:] = data
@@ -354,6 +356,40 @@ class Interpolator(object):
 
         result.shape = self.shape
         return result.squeeze()
+
+    def interpolate_prop_with_stride(self, prop):
+        prop_stride = False
+        for array in self.particle_arrays:
+            if prop in array.stride:
+                prop_stride = array.stride[prop]
+                break
+        if not prop_stride:
+            raise RuntimeError(f"Error: {prop} does not have stride. Use `interpolate`")
+        
+        result = []
+        for pi in range(prop_stride):
+            for array in self.particle_arrays:
+                if prop not in array.properties:
+                    data = 0.0
+                else:
+                    data = array.get(prop, only_real_particles=False)
+                    
+                    # Get every pi-th element
+                    data = data[pi::prop_stride]
+                
+                array.get('temp_prop', only_real_particles=False)[:] = data
+
+            self.func_eval.compute(0.0, 0.1) # These are junk arguments.
+            if self.method in ['sph', 'shepard']:
+                result.append(self.pa.prop.copy())
+            else:
+                result.append(self.pa.prop[0::4].copy())
+
+        result = np.array(result)
+        
+        # Combine the result matrix into a single array with stride
+        result = np.ravel(result, order='F')
+        return result.squeeze()        
 
     def update(self, update_domain=True):
         """Update the NNPS when particles have moved.
