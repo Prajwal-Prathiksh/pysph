@@ -678,7 +678,7 @@ class ParticleArrayHelper(HasTraits):
     def _time_changed(self, value):
         txt = self._text
         if txt is not None:
-            txt.text = 'Time = %.3e' % (value)
+            txt.text = 'Time = %.3f' % (value)
 
     def _extra_scalars_default(self):
         return ['vmag', 'omega_mag', 'omegax', 'omegay', 'omegaz']
